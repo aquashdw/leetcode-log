@@ -3,7 +3,6 @@ from typing import List
 
 class Solution:
     def findDuplicate(self, nums: List[int]) -> int:
-        n = len(nums)
         fast = nums[nums[nums[0]]]
         slow = nums[nums[0]]
         while fast != slow:
