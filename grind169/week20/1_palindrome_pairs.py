@@ -1,48 +1,62 @@
 from typing import List
 
 
+def is_palindrome(word, start, end):
+    while start < end:
+        if word[start] != word[end]:
+            return False
+        start += 1
+        end -= 1
+    return True
+
+
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.idx = None
+        self.list = []
+
+    def insert(self, word: str, idx: int) -> None:
+        node = self
+        for i in range(len(word) - 1, -1, -1):
+            char = word[i]
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            if is_palindrome(word, 0, i):
+                node.list.append(idx)
+            node = node.children[char]
+        node.list.append(idx)
+        node.idx = idx
+
+
 class Solution:
     def palindromePairs(self, words: List[str]) -> List[List[int]]:
         if not words:
             return []
 
-        def is_palindrome(target):
-            n = len(target)
-            for i in range(n // 2):
-                if target[i] != target[n - 1 - i]:
-                    return False
-            return True
-
         results = []
-        word_map = {words[i]: i for i in range(len(words))}
-        if "" in word_map:
-            blank_idx = word_map[""]
-            for idx, word in enumerate(words):
-                if word == "":
-                    continue
-                if is_palindrome(word):
-                    results.append([blank_idx, idx])
-                    results.append([idx, blank_idx])
-
+        root = TrieNode()
         for idx, word in enumerate(words):
-            word_rev = word[::-1]
-            if word_rev in word_map and word_map[word_rev] != idx:
-                results.append([idx, word_map[word_rev]])
+            root.insert(word, idx)
 
-        for idx, word in enumerate(words):
-            for bound in range(1, len(word)):
-                if is_palindrome(word[:bound]):
-                    part_rev = word[:bound - 1:-1]
-                    if part_rev in word_map:
-                        if word_map[part_rev] == idx:
-                            continue
-                        results.append([word_map[part_rev], idx])
-                if is_palindrome(word[bound:]):
-                    part_rev = word[bound - 1::-1]
-                    if part_rev in word_map:
-                        if word_map[part_rev] == idx:
-                            continue
-                        results.append([idx, word_map[part_rev]])
+        def search_pairs(idx):
+            node = root
+            word = words[idx]
+            word_len = len(word)
+            for i in range(word_len):
+                if node.idx is not None and node.idx != idx and is_palindrome(word, i, word_len - 1):
+                    results.append([idx, node.idx])
+
+                if word[i] not in node.children:
+                    return
+                node = node.children[word[i]]
+
+            for i in node.list:
+                if i != idx:
+                    results.append([idx, i])
+
+        for idx in range(len(words)):
+            search_pairs(idx)
 
         return results
 

@@ -1,6 +1,3 @@
-from typing import Dict
-
-
 # iterative Trie
 class Trie:
     def __init__(self):
